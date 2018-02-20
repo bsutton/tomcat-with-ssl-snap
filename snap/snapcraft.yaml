@@ -1,0 +1,147 @@
+name: pi-gation # you probably want to 'snapcraft register <name>'
+version: '0.1' # just for humans, typically '1.2+git' or '1.3.2'
+summary: Irrigation an lighting controller for Raspberry Pi
+description: | 
+  Pi-gation is a web app designed to allow you to control external lighting 
+  and irrigation systems from a mobile device.
+  
+  The app allows you to configure Pins on the Pi to control various devices 
+  such as Lights and Valves for an irrigation system.
+
+  In theory the app can be used to control any device attached to a Pi 
+  but it has specific interfaces that are fashioned around configuring 
+  irrigation and lighting systems.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: devmode # use 'strict' once you have the right plugs and slots
+  
+
+apps:
+  pi-gation:
+    command: pi-gation-launch
+    daemon: simple
+    plugs: [network, network-bind]
+ 
+  # used to ran the certbot renewal process.
+  cron:
+    command: cron
+    daemon: simple
+    plugs: [network, network-bind]
+
+
+    ## When 'on' is supported for environment we can remove the custom
+    ## launcher.
+      #environment:
+        #PI4J_PLATFORM: 
+      #- on arm64: 'RaspberryPi GPIO Provider' 
+      #- else: 'Simulated'
+        #SimulatedPlatform: 
+      #- on arm64: '' 
+      #- else: 'RaspberryPi GPIO Provider'
+
+  getcert:
+    command: getcert
+    plugs: [network, network-bind]
+
+#hooks:
+  #install:
+    #plugs: []
+
+  #configure:
+    #plugs: []
+
+parts: 
+  # build the web app
+  pi-gation-webapp:
+    plugin: maven
+    source: https://github.com/bsutton/IrrigationForPi.git
+    maven-options:
+      [-DskipTests=true]
+    organize:
+      war/irrigation-1.0-SNAPSHOT.war : webapps/pi-gation.war
+    after: [tomcat]
+    stage-packages:
+      - libc6
+      - libbz2-1.0
+      - libgcc1
+      - libcomerr2
+      - libgcrypt20
+      - liblzma5
+      - libmount1
+      - libncursesw5
+      - libselinux1
+      - libtinfo5
+      - libuuid1
+      - libstdc++6
+      - libsmartcols1
+      - libgpg-error0
+      - libblkid1
+      - zlib1g
+      - libpcre3
+
+
+  # copies the files in snap/src/scripts/ to 
+  # the root of the snap directory - snap/
+  pi-gation-launch:
+    plugin: dump
+    source: snap/src/scripts/pi-gation-launch
+  
+  getcert:
+    plugin: dump
+    source: snap/src/scripts/getcert
+    # run our renew script as a certbot post renewal deploy script
+    # this installs the certs into the java keystore and restarts tomcat.
+    organize: 
+      renewal : /etc/letsencrypt/renewal-hooks/deploy
+
+  tomcat:
+    plugin: ant
+    source: http://svn.apache.org/repos/asf/tomcat/tc8.5.x/trunk/
+    source-type: svn
+    prepare: |
+      cp build.properties.default build.properties
+    install: |
+      cp -r output/build/* $SNAPCRAFT_PART_INSTALL
+      cat <<EOF > $SNAPCRAFT_PART_INSTALL/tomcat-launch
+      #!/bin/sh
+      export JRE_HOME=\${SNAP}/usr/lib/jvm/default-java/jre
+      export JAVA_HOME=\${SNAP}/usr/lib/jvm/default-java/jre
+      export CATALINA_HOME=\${SNAP}
+      export CATALINA_BASE=\${SNAP_DATA}
+      export CATALINA_TMPDIR=/tmp
+      cp -rn \${CATALINA_HOME}/conf \${CATALINA_BASE}/
+      cp -rn \${CATALINA_HOME}/webapps \${CATALINA_BASE}/
+      exec \${CATALINA_HOME}/bin/catalina.sh run
+      EOF
+      chmod +x $SNAPCRAFT_PART_INSTALL/tomcat-launch
+    stage-packages:
+      - libc6
+      - libbz2-1.0
+      - libgcc1
+      - libcomerr2
+      - libgcrypt20
+      - liblzma5
+      - libmount1
+      - libncursesw5
+      - libselinux1
+      - libtinfo5
+      - libuuid1
+      - libstdc++6
+      - libsmartcols1
+      - libgpg-error0
+      - libblkid1
+      - zlib1g
+      - libpcre3
+
+
+# https://kyrofa.com/posts/snapping-nextcloud-the-web-server  
+  #apache:
+    #plugin: apache
+    #stage-packages: [apache2]
+    #after: [tomcat]
+
+  #apache:
+    #command: webserver pi-gation
+    #daemon: simple
+    #restart-condition: always
+    #plugs: [network-bind]

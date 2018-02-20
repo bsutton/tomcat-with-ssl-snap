@@ -1,0 +1,19 @@
+#!/bin/dash
+set -x
+
+
+# generate random password for keystore
+#KEYSTOREPWD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+
+# hmm don't like this but how else do we pass this to the config hook
+#snapctl set keystorepwd=${KEYSTOREPWD}
+
+#mkdir -p /etc/letsencrypt/live/${SNAPNAME}
+
+# create pkcs12 store
+#openssl pkcs12 -export \
+# -in /etc/letsencrypt/live/${SNAPNAME}/fullchain.pem \
+# -inkey /etc/letsencrypt/live/${SNAPNAME}/privkey.pem \
+# -out /etc/tomcat8/keystore/${SNAPNAME}.p12 \
+# -password pass:${KEYSTOREPWD}
+

@@ -1,0 +1,30 @@
+echo -n "Wait for lets encrypt certificate to be installed"
+
+SNAPCTL=snapctl
+
+while [ "`${SNAPCTL}` get fqdn" == "" ]; do
+	sleep 15m
+done
+
+echo "FQDN has been configured by getcert."
+echo "Running certificate renewal every 15min"
+
+FQDN="`${SNAPCTL}` get fqdn"
+
+while true; do
+
+	# run cert bot renewal
+ 	certbot certonly \
+	 --standalone \
+	 --noninteractive \
+	 --domain ${FQDN} \
+	 --agree-tos \
+	 --email ${EMAIL} \
+	 --cert-path /etc/letsencrypt/live/${fQDN} \
+	 --key-path  /etc/letsencrypt/live/${fQDN} \
+	 --fullchain-path  /etc/letsencrypt/live/${fQDN} \
+	 --test-cert \
+	 --staging
+	 #--dry-run \
+	sleep 15m
+done

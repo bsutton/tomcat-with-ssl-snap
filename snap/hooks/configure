@@ -1,0 +1,28 @@
+#!/bin/sh
+set -x
+
+APPDOMAIN=${SNAPNAME}
+
+# generate random password for keystore
+#KEYSTOREPWD=`snapctl get keystorepwd`
+
+
+#mkdir -p /etc/letsencrypt/live/${APPDOMAIN}
+
+
+# run cert bot
+# import pkcs12 store int java keystore.
+#keytool -importkeystore \
+# -srckeystore /etc/tomcat8/keystore/${APPDOMAIN}.p12 \
+# -srcstoretype pkcs12 \
+# -srcstorepass ${KEYSTOREPWD} \
+# -destkeystore /etc/tomcat8/keystore/${APPDOMAIN}.keystore \
+# -deststoretype jks \
+# -deststorepass ${APPDOMAIN}
+
+ # overwrite the default tomcat config file with our SSL enabled one along with the keystore password
+#sed  -e 's/%APPDOMAIN%/'${APPDOMAIN}'/g' \
+#	-e 's/%KEYSTOREPWD%/'${KEYSTOREPWD}'/g' \
+#	< tomcat-server-with-ssl.xml \
+#	> /conf/server.xml
+
