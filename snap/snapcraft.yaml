@@ -30,7 +30,9 @@ parts:
     # run our renew script as a certbot post renewal deploy script
     # this installs the certs into the java keystore and restarts tomcat.
     organize: 
-      renewal : /etc/letsencrypt/renewal-hooks/deploy
+      renewal : etc/letsencrypt/renewal-hooks/deploy
+    stage-packages:
+      - certbot
 
   tomcat:
     plugin: ant
