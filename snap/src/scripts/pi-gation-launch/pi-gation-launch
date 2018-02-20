@@ -8,5 +8,5 @@ fi
 export pi_gation_db_username="`snap get pi-gation db-username`"
 export pi_gation_db_password="`snap get pi-gation db-password`"
 export pi_gation_https_port="`snap get pi-gation https-port`"
-$SNAP/tomcat-launch
+${SNAP}/tomcat-launch
 

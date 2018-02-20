@@ -14,18 +14,18 @@ SNAPCTL=snap
 
 # re-create pkcs12 store
 openssl pkcs12 -export \
-  -in /etc/letsencrypt/live/${FQDN}/fullchain.pem \
-  -inkey /etc/letsencrypt/live/${FQDN}/privkey.pem \
-  -out /etc/tomcat8/keystore/${FQDN}.p12 \
+  -in ${SNAPDATA}/etc/letsencrypt/live/${FQDN}/fullchain.pem \
+  -inkey ${SNAPDATA}/etc/letsencrypt/live/${FQDN}/privkey.pem \
+  -out ${SNAPDATA}/etc/tomcat8/keystore/${FQDN}.p12 \
  -password pass:${KEYSTOREPWD}
 
 # import pkcs12 store int java keystore.
 keytool -importkeystore \
  -noprompt \
- -srckeystore /etc/tomcat8/keystore/${FQDN}.p12 \
+ -srckeystore ${SNAPDATA}/etc/tomcat8/keystore/${FQDN}.p12 \
  -srcstoretype pkcs12 \
  -srcstorepass ${KEYSTOREPWD} \
- -destkeystore /etc/tomcat8/keystore/${FQDN}.keystore \
+ -destkeystore ${SNAPDATA}/etc/tomcat8/keystore/${FQDN}.keystore \
  -deststoretype jks \
  -deststorepass ${FQDN}
 
