@@ -34,8 +34,10 @@ parts:
 
   tomcat:
     plugin: ant
-    source: http://svn.apache.org/repos/asf/tomcat/tc8.5.x/trunk/
-    source-type: svn
+    source: https://github.com/apache/tomcat/tree/TOMCAT_9_0_5
+    source-type: git
+    # source: http://svn.apache.org/repos/asf/tomcat/tc8.5.x/trunk/
+    # source-type: svn
     prepare: |
       cp build.properties.default build.properties
     install: |
