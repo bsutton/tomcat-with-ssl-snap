@@ -1,3 +1,5 @@
+#!/bin/dash
+
 echo -n "Wait for lets encrypt certificate to be installed"
 
 SNAPCTL=snapctl
@@ -20,11 +22,15 @@ while true; do
 	 --domain ${FQDN} \
 	 --agree-tos \
 	 --email ${EMAIL} \
-	 --cert-path ${SNAPDATA}/etc/letsencrypt/live/${fQDN} \
-	 --key-path  ${SNAPDATA}/etc/letsencrypt/live/${fQDN} \
-	 --fullchain-path  ${SNAPDATA}/etc/letsencrypt/live/${fQDN} \
-	 --test-cert \
-	 --staging
+	 --config-dir=${SNAP_DATA}/letsencrypt/config \
+	 --work-dir=${SNAP_DATA}/letsencrypt/work \	
+	 --logs-dir=${SNAP_DATA}/letsencrypt/logs \
+	 --cert-path ${SNAP_DATA}/letsencrypt/live/${FQDN} \
+	 --key-path  ${SNAP_DATA}/letsencrypt/live/${FQDN} \
+	 --fullchain-path  ${SNAP_DATA}/letsencrypt/live/${FQDN} \
+	 --deploy-hook ${SNAP}/letsencrypt/renewal-hooks/deploy 
+	 #--test-cert \
+	 #--staging
 	 #--dry-run \
 	sleep 15m
 done

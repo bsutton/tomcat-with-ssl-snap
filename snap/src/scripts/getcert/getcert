@@ -24,15 +24,15 @@ FQDN=$2
 
 # generate random password for keystore
 KEYSTOREPWD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-KEYSTORE_DIR=${SNAP_DATA}/etc/tomcat8/keystore
+KEYSTORE_DIR=${SNAP_DATA}/keystore
 
-#mkdir -p /etc/letsencrypt/live/${FQDN}
+#mkdir -p ${SNAP_DATA}/letsencrypt/live/${FQDN}
 
 # check if the certificate already exists and if so lets delete it.
 # if we don't delete the cert dir certbot will use a different name so our later steps won't find the certs.
-if [ -e "/etc/letsencrypt/live/${FQDN}" ]; then
-	echo rm -rf "/etc/letsencrypt/live/${FQDN}"
-	#rm -rf "/etc/letsencrypt/live/${FQDN}"
+if [ -e "${SNAP_DATA}/letsencrypt/live/${FQDN}" ]; then
+	echo rm -rf "${SNAP_DATA}/letsencrypt/live/${FQDN}"
+	#rm -rf "${SNAP_DATA}/letsencrypt/live/${FQDN}"
 	#certbot delete --cert-name home.noojee.org
 fi
 
@@ -41,15 +41,17 @@ snap stop ${SNAP_NAME}.tomcat
 
 # run cert bot to obtain certificates
 certbot certonly \
-	--force-renew \
 	 --standalone \
 	 --noninteractive \
 	 --domain ${FQDN} \
 	 --agree-tos \
 	 --email ${EMAIL} \
-	 --cert-path /etc/letsencrypt/live/${fQDN} \
-	 --key-path  /etc/letsencrypt/live/${fQDN} \
-	 --fullchain-path  /etc/letsencrypt/live/${fQDN} 
+	 --config-dir=${SNAP_DATA}/letsencrypt/config \
+	 --work-dir=${SNAP_DATA}/letsencrypt/work \
+	 --logs-dir=${SNAP_DATA}/letsencrypt/logs \
+	 --cert-path ${SNAP_DATA}/letsencrypt/live/${fQDN} \
+	 --key-path  ${SNAP_DATA}/letsencrypt/live/${fQDN} \
+	 --fullchain-path  ${SNAP_DATA}/letsencrypt/live/${fQDN} 
 	 #--test-cert \
 	 #--staging
 	 #--dry-run \
@@ -59,14 +61,14 @@ mkdir -p ${KEYSTORE_DIR}
 
 # create pkcs12 store
 openssl pkcs12 -export \
-  -in /etc/letsencrypt/live/${FQDN}/fullchain.pem \
-  -inkey /etc/letsencrypt/live/${FQDN}/privkey.pem \
+  -in ${SNAP_DATA}/letsencrypt/live/${FQDN}/fullchain.pem \
+  -inkey ${SNAP_DATA}/letsencrypt/live/${FQDN}/privkey.pem \
   -out ${KEYSTORE_DIR}/${FQDN}.p12 \
  -password pass:${KEYSTOREPWD}
 
 KEYSTORE=${KEYSTORE_DIR}/${FQDN}.keystore 
 
-
+# delete the key store so we can recreate it
 rm ${KEYSTORE}
 
 #keytool -genkey -alias ${FQDN} -keyalg RSA -keystore ${KEYSTORE} -keysize 2048
@@ -103,5 +105,9 @@ sed  -e 's,%FQDN%,'${FQDN}',g' \
 	-e 's,%KEYSTORE%,'${KEYSTORE_DIR}',g' \
 	< ${SNAP}/tomcat-with-ssl.xml \
 	> "${SERVERXML}"
+
+# The certbot renewal process needs these.
+snapctl set KEYSTOREPWD=${KEYSTOREPWD}
+snapctl set FQDN=${FQDN}
 
 snap restart ${SNAP_NAME}.tomcat
