@@ -24,6 +24,7 @@ FQDN=$2
 
 # generate random password for keystore
 KEYSTOREPWD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+KEYSTORE_DIR=${SNAP_DATA}/etc/tomcat8/keystore
 
 #mkdir -p /etc/letsencrypt/live/${FQDN}
 
@@ -35,9 +36,12 @@ if [ -e "/etc/letsencrypt/live/${FQDN}" ]; then
 	#certbot delete --cert-name home.noojee.org
 fi
 
+# Need to take control of port 80 for cert validation
+snap stop ${SNAP_NAME}.tomcat
 
 # run cert bot to obtain certificates
- certbot certonly \
+certbot certonly \
+	--force-renew \
 	 --standalone \
 	 --noninteractive \
 	 --domain ${FQDN} \
@@ -45,30 +49,44 @@ fi
 	 --email ${EMAIL} \
 	 --cert-path /etc/letsencrypt/live/${fQDN} \
 	 --key-path  /etc/letsencrypt/live/${fQDN} \
-	 --fullchain-path  /etc/letsencrypt/live/${fQDN} \
-	 --test-cert \
-	 --staging
+	 --fullchain-path  /etc/letsencrypt/live/${fQDN} 
+	 #--test-cert \
+	 #--staging
 	 #--dry-run \
 
 
-mkdir -p ${SNAP_DATA}/etc/tomcat8/keystore
+mkdir -p ${KEYSTORE_DIR}
 
 # create pkcs12 store
 openssl pkcs12 -export \
   -in /etc/letsencrypt/live/${FQDN}/fullchain.pem \
   -inkey /etc/letsencrypt/live/${FQDN}/privkey.pem \
-  -out ${SNAP_DATA}/etc/tomcat8/keystore/${FQDN}.p12 \
+  -out ${KEYSTORE_DIR}/${FQDN}.p12 \
  -password pass:${KEYSTOREPWD}
+
+KEYSTORE=${KEYSTORE_DIR}/${FQDN}.keystore 
+
+
+rm ${KEYSTORE}
+
+#keytool -genkey -alias ${FQDN} -keyalg RSA -keystore ${KEYSTORE} -keysize 2048
+
+# we reset the keystore password each time
+# this is destructive if anyone else is using the keystore but we 
+# created this one so bad luck
+#keytool -storepasswd \
+	#-new "${KEYSTOREPWD}" \
+	#-keystore "${KEYSTORE_DIR}/${FQDN}.keystore"
 
 # import pkcs12 store int java keystore.
 keytool -importkeystore \
  -noprompt \
- -srckeystore ${SNAP_DATA}/etc/tomcat8/keystore/${FQDN}.p12 \
+ -srckeystore ${KEYSTORE_DIR}/${FQDN}.p12 \
  -srcstoretype pkcs12 \
  -srcstorepass ${KEYSTOREPWD} \
- -destkeystore ${SNAP_DATA}/etc/tomcat8/keystore/${FQDN}.keystore \
+ -destkeystore ${KEYSTORE_DIR}/${FQDN}.keystore \
  -deststoretype jks \
- -deststorepass ${FQDN}
+ -deststorepass ${KEYSTOREPWD}
 
 SERVERXML="${SNAP_DATA}/conf/server.xml"
 SERVERXML_BACKUP="${SNAP_DATA}/conf/server.xml.backup"
@@ -80,9 +98,10 @@ else
 fi
 
 # overwrite the default tomcat config file with our SSL enabled one along with the keystore password
-sed  -e 's/%FQDN%/'${FQDN}'/g' \
-	-e 's/%KEYSTOREPWD%/'${KEYSTOREPWD}'/g' \
-	< ${SNAP}/tomcat-server-with-ssl.xml \
+sed  -e 's,%FQDN%,'${FQDN}',g' \
+	-e 's,%KEYSTOREPWD%,'${KEYSTOREPWD}',g' \
+	-e 's,%KEYSTORE%,'${KEYSTORE_DIR}',g' \
+	< ${SNAP}/tomcat-with-ssl.xml \
 	> "${SERVERXML}"
 
-snap restart ${SNAP_NAME}
+snap restart ${SNAP_NAME}.tomcat
