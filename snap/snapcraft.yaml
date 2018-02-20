@@ -34,7 +34,7 @@ parts:
 
   tomcat:
     plugin: ant
-    source: https://github.com/apache/tomcat/tree/TOMCAT_9_0_5
+    source: https://github.com/apache/tomcat85.git
     source-type: git
     # source: http://svn.apache.org/repos/asf/tomcat/tc8.5.x/trunk/
     # source-type: svn
