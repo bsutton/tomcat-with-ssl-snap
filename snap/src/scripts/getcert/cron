@@ -22,12 +22,12 @@ while true; do
 	 --domain ${FQDN} \
 	 --agree-tos \
 	 --email ${EMAIL} \
-	 --config-dir=${SNAP_DATA}/letsencrypt/config \
-	 --work-dir=${SNAP_DATA}/letsencrypt/work \	
-	 --logs-dir=${SNAP_DATA}/letsencrypt/logs \
-	 --cert-path ${SNAP_DATA}/letsencrypt/live/${FQDN} \
-	 --key-path  ${SNAP_DATA}/letsencrypt/live/${FQDN} \
-	 --fullchain-path  ${SNAP_DATA}/letsencrypt/live/${FQDN} \
+	 --config-dir ${SNAP_USER_DATA}/letsencrypt/config \
+	 --work-dir ${SNAP_USER_DATA}/letsencrypt/work \	
+	 --logs-dir ${SNAP_USER_DATA}/letsencrypt/logs \
+	 --cert-path ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN} \
+	 --key-path ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN} \
+	 --fullchain-path ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN} \
 	 --deploy-hook ${SNAP}/letsencrypt/renewal-hooks/deploy 
 	 #--test-cert \
 	 #--staging

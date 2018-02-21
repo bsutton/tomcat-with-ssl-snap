@@ -77,8 +77,9 @@
 		scheme="https" 
 		secure="true" 
 		URIEncoding="UTF-8"
-		keystoreFile="/etc/tomcat8/keystore/%FQDN%.keystore"
-		keystorePass="%KEYSTOREPWD%"
+		keystoreFile="%KEYSTORE_PATH%"
+		keystorePass="%KEYSTORE_PWD%"
+                keystoreType="PKCS12" 
 		clientAuth="false" 
 		sslProtocol="TLS" />
     <!-- A "Connector" using the shared thread pool-->

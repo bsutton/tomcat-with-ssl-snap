@@ -1,8 +1,10 @@
 #!/bin/dash
 set -x
-
+echo snap_user_data=${SNAP_USER_DATA}
+echo snap_data=${SNAP_DATA}
+echo snap=${SNAP}
 #temp hacks
-SNAPNAME=tomcat-with-ssl
+SNAP_NAME=tomcat-with-ssl
 #end hacks	
 
 # If no arguments, print usage statement & exit from function
@@ -23,72 +25,83 @@ EMAIL=$1
 FQDN=$2
 
 # generate random password for keystore
-KEYSTOREPWD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-KEYSTORE_DIR=${SNAP_DATA}/keystore
+KEYSTORE_PWD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+KEYSTORE_DIR=${SNAP_USER_DATA}/keystore
 
-#mkdir -p ${SNAP_DATA}/letsencrypt/live/${FQDN}
+#mkdir -p ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN}
 
 # check if the certificate already exists and if so lets delete it.
 # if we don't delete the cert dir certbot will use a different name so our later steps won't find the certs.
-if [ -e "${SNAP_DATA}/letsencrypt/live/${FQDN}" ]; then
-	echo rm -rf "${SNAP_DATA}/letsencrypt/live/${FQDN}"
-	#rm -rf "${SNAP_DATA}/letsencrypt/live/${FQDN}"
-	#certbot delete --cert-name home.noojee.org
+if [ -e "${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN}" ]; then
+	rm -rf "${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN}"
+	certbot --config-dir ${SNAP_USER_DATA}/letsencrypt/config delete --cert-name ${FQDN}
 fi
 
 # Need to take control of port 80 for cert validation
+echo Stopping Tomcat
 snap stop ${SNAP_NAME}.tomcat
 
+echo Please ignore the following warning: 'Non-standard path(s)....'
 # run cert bot to obtain certificates
 certbot certonly \
+         --quiet \
 	 --standalone \
 	 --noninteractive \
 	 --domain ${FQDN} \
 	 --agree-tos \
 	 --email ${EMAIL} \
-	 --config-dir=${SNAP_DATA}/letsencrypt/config \
-	 --work-dir=${SNAP_DATA}/letsencrypt/work \
-	 --logs-dir=${SNAP_DATA}/letsencrypt/logs \
-	 --cert-path ${SNAP_DATA}/letsencrypt/live/${fQDN} \
-	 --key-path  ${SNAP_DATA}/letsencrypt/live/${fQDN} \
-	 --fullchain-path  ${SNAP_DATA}/letsencrypt/live/${fQDN} 
-	 #--test-cert \
-	 #--staging
+	 --config-dir ${SNAP_USER_DATA}/letsencrypt/config \
+	 --work-dir ${SNAP_USER_DATA}/letsencrypt/work \
+	 --logs-dir ${SNAP_USER_DATA}/letsencrypt/logs \
+	 --cert-path ${SNAP_USER_DATA}/letsencrypt/config/live/${fQDN} \
+	 --key-path ${SNAP_USER_DATA}/letsencrypt/config/live/${fQDN} \
+	 --fullchain-path ${SNAP_USER_DATA}/letsencrypt/config/live/${fQDN} \
+	 --test-cert \
+	 --staging 
+	 #--force-renewal
 	 #--dry-run \
 
 
 mkdir -p ${KEYSTORE_DIR}
 
+echo exporting keys
+
+KEYSTORE_PATH=${KEYSTORE_DIR}/${FQDN}.p12 
+
 # create pkcs12 store
 openssl pkcs12 -export \
-  -in ${SNAP_DATA}/letsencrypt/live/${FQDN}/fullchain.pem \
-  -inkey ${SNAP_DATA}/letsencrypt/live/${FQDN}/privkey.pem \
-  -out ${KEYSTORE_DIR}/${FQDN}.p12 \
- -password pass:${KEYSTOREPWD}
+  -in ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN}/fullchain.pem \
+  -inkey ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN}/privkey.pem \
+  -out ${KEYSTORE_PATH} \
+ -password pass:${KEYSTORE_PWD}
 
-KEYSTORE=${KEYSTORE_DIR}/${FQDN}.keystore 
+# JKS KEYSTORE_PATH=${KEYSTORE_DIR}/${FQDN}.keystore 
 
 # delete the key store so we can recreate it
-rm ${KEYSTORE}
+rm -f "${KEYSTORE_DIR}/*.p12/"
+#rm -f "${KEYSTORE_DIR}/*.keystore/" # wont' be needed
 
-#keytool -genkey -alias ${FQDN} -keyalg RSA -keystore ${KEYSTORE} -keysize 2048
+#keytool -genkey -alias ${FQDN} -keyalg RSA -keystore ${KEYSTORE_PATH} -keysize 2048
 
 # we reset the keystore password each time
 # this is destructive if anyone else is using the keystore but we 
 # created this one so bad luck
 #keytool -storepasswd \
-	#-new "${KEYSTOREPWD}" \
+	#-new "${KEYSTORE_PWD}" \
 	#-keystore "${KEYSTORE_DIR}/${FQDN}.keystore"
 
 # import pkcs12 store int java keystore.
-keytool -importkeystore \
- -noprompt \
- -srckeystore ${KEYSTORE_DIR}/${FQDN}.p12 \
- -srcstoretype pkcs12 \
- -srcstorepass ${KEYSTOREPWD} \
- -destkeystore ${KEYSTORE_DIR}/${FQDN}.keystore \
- -deststoretype jks \
- -deststorepass ${KEYSTOREPWD}
+#echo importing keys into java keystore
+#keytool -importkeystore \
+# -noprompt \
+# -srckeystore ${KEYSTORE_DIR}/${FQDN}.p12 \
+# -srcstoretype pkcs12 \
+# -srcstorepass ${KEYSTORE_PWD} \
+# -destkeystore ${KEYSTORE_DIR}/${FQDN}.keystore \
+# -deststoretype JKS \
+# -deststorepass ${KEYSTORE_PWD}
+# #-deststoretype PKCS12 \
+
 
 SERVERXML="${SNAP_DATA}/conf/server.xml"
 SERVERXML_BACKUP="${SNAP_DATA}/conf/server.xml.backup"
@@ -101,13 +114,14 @@ fi
 
 # overwrite the default tomcat config file with our SSL enabled one along with the keystore password
 sed  -e 's,%FQDN%,'${FQDN}',g' \
-	-e 's,%KEYSTOREPWD%,'${KEYSTOREPWD}',g' \
-	-e 's,%KEYSTORE%,'${KEYSTORE_DIR}',g' \
+	-e 's,%KEYSTORE_PWD%,'${KEYSTORE_PWD}',g' \
+	-e 's,%KEYSTORE_PATH%,'${KEYSTORE_PATH}',g' \
 	< ${SNAP}/tomcat-with-ssl.xml \
 	> "${SERVERXML}"
 
 # The certbot renewal process needs these.
-snapctl set KEYSTOREPWD=${KEYSTOREPWD}
+snapctl set KEYSTORE_PWD=${KEYSTORE_PWD}
 snapctl set FQDN=${FQDN}
 
+echo Starting Tomcat
 snap restart ${SNAP_NAME}.tomcat

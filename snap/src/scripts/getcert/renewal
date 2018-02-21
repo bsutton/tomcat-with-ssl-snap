@@ -5,29 +5,29 @@ set -x
 SNAPCTL=snapctl
 
 #temp hacks
-SNAPNAME=pi-gation
+SNAP_NAME=tomcat-with-sll
 SNAPCTL=snap
 #end hacks	
 
 # after a cert renewal we need to install the certs into the java keystore
 
-KEYSTOREPWD="`${SNAPCTL}` get keystorepwd"
+KEYSTORE_PWD="`${SNAPCTL}` get keystorepwd"
 FQDN="`${SNAPCTL}` get fqdn"
 
 # re-create pkcs12 store
 openssl pkcs12 -export \
-  -in ${SNAP_DATA}/letsencrypt/live/${FQDN}/fullchain.pem \
-  -inkey ${SNAP_DATA}/letsencrypt/live/${FQDN}/privkey.pem \
-  -out ${SNAP_DATA}/keystore/${FQDN}.p12 \
- -password pass:${KEYSTOREPWD}
+  -in ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN}/fullchain.pem \
+  -inkey ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN}/privkey.pem \
+  -out ${SNAP_USER_DATA}/keystore/${FQDN}.p12 \
+ -password pass:${KEYSTORE_PWD}
 
 # import pkcs12 store int java keystore.
 keytool -importkeystore \
  -noprompt \
- -srckeystore ${SNAP_DATA}/tomcat8/keystore/${FQDN}.p12 \
+ -srckeystore ${SNAP_USER_DATA}/tomcat8/keystore/${FQDN}.p12 \
  -srcstoretype pkcs12 \
- -srcstorepass ${KEYSTOREPWD} \
- -destkeystore ${SNAP_DATA}/tomcat8/keystore/${FQDN}.keystore \
+ -srcstorepass ${KEYSTORE_PWD} \
+ -destkeystore ${SNAP_USER_DATA}/tomcat8/keystore/${FQDN}.keystore \
  -deststoretype jks \
  -deststorepass ${FQDN}
 
