@@ -1,4 +1,5 @@
 #!/bin/dash
+set -x
 
 echo -n "Wait for lets encrypt certificate to be installed"
 
