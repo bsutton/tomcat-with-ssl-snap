@@ -1,28 +1,44 @@
-#!/bin/dash
+#!/bin/bash
 #set -x
 
-# clear the keys incase this is a re-run. 
-# clearing the keys will stop the renewal process running whilst we get a cert.
-snap set ${SNAP_NAME} keystorepwd=
-snap set ${SNAP_NAME} fqdn=
-snap set ${SNAP_NAME} email=
-
 # If no arguments, print usage statement & exit from function
-if [ "$#" -ne "2" ]; then
+if [ "$#" -lt "2" ] || [ "$#" -gt "3" ] ; then
 	echo
-	echo "Usage: getcert <emailaddress> <fqdn> "
+	echo "Usage: getcert <emailaddress> <fqdn> (production) "
 	echo
 	echo "Runs runs certbot to obtain an SSL certificate for <fqdn>."
-	echo  The email address is used by letsencrypt to notify you of certificate issues.
+	echo "The email address is used by letsencrypt to notify you of certificate issues."
 	echo
-	echo "<emailaddress> the email address for letsencrypt to send notifications to"
-	echo "<fqdn> the fqdn to request a certificate for."
+	echo "<emailaddress> - the email address for letsencrypt to send notifications to"
+	echo "<fqdn> - the fqdn to request a certificate for."
+	echo "production - The production parameter should be passed as true or false with the default being true."
+	echo "  If set to true a 'product' certificate is requested"
+	echo "  If set to false a 'staging/test' certificate is requested"
+	echo "  A staging certificate is useful when doing install testing to avoid hitting "
+	echo "  the Lets Encrypt production certificate requests limit (around five)."
 	exit 1 
 fi
 
 
 EMAIL=$1
 FQDN=$2
+CERTIFICATE_TYPE=$3
+
+# if no third argument then we want a production certificate
+if [ "$3" == "" ] || [ "$3" == "true" ] ; then
+	CERTIFICATE_TYPE=
+	echo "Production certificate will be requested."
+else
+	CERTIFICATE_TYPE=--staging
+	echo "Staging (test) certificate will be requested."
+fi
+
+# clearing the keys will stop the renewal process running whilst we get a cert.
+# This is needed incase we get run multiple times
+snap set ${SNAP_NAME} keystorepwd=
+snap set ${SNAP_NAME} fqdn=
+snap set ${SNAP_NAME} email=
+snap set ${SNAP_NAME} certificatetype=${CERTIFICATE_TYPE}
 
 # generate random password for keystore
 KEYSTORE_PWD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
@@ -44,7 +60,7 @@ snap stop ${SNAP_NAME}.tomcat
 echo fetching SSL certificate, this will take 30+seconds
 echo Please ignore the following warning: 'Non-standard path(s)....'
 # run cert bot to obtain certificates
-certbot certonly \
+certbot certonly ${CERTIFICATE_TYPE} \
          --quiet \
 	 --standalone \
 	 --noninteractive \

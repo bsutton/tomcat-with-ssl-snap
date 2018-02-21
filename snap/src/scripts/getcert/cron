@@ -23,7 +23,9 @@ done
 # the initial certificate now exists so ever 15 mins lets check if we need to renew
 
 EMAIL=`${SNAPGET} email` 
+CERTIFICATE_TYPE=`${SNAPGET} certificatetype` 
 echo email=$EMAIL &>> ${LOG_FILE}
+echo certificatetype=$CERTIFICATE_TYPE &>> ${LOG_FILE}
 echo fqdn=$FQDN &>> ${LOG_FILE}
 
 echo "FQDN has been configured by getcert."
@@ -31,7 +33,7 @@ echo "Running certificate renewal every 15min"
 while true; do
 
 	# run cert bot renewal
- 	certbot certonly \
+ 	certbot certonly ${CERTIFICATE_TYPE} \
 	 --webroot -w ${SNAP_DATA}/webapps \
 	 --noninteractive \
 	 --domain ${FQDN} \
