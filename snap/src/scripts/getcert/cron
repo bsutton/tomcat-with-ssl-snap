@@ -1,17 +1,22 @@
 #!/bin/bash
 #set -x
 
+
+# setup for logging
+mkdir -p ${SNAP_USER_DATA}/cron
+LOG_FILE=${SNAP_USER_DATA}/cron/renew.log
+
 echo 
 echo "tomcat-with-ssl cron running certificate renewal" &>> ${LOG_FILE}
 echo 
 
-# setup for loggin
-mkdir -p ${SNAP_USER_DATA}/cron
-LOG_FILE=${SNAP_USER_DATA}/cron/renew.log
+
 SNAPGET="snapctl get"
+
 
 # wait until 'getcert' has obtained the initial certificate
 echo -n "Wait for initial lets encrypt certificate to be installed"
+
 FQDN=`${SNAPGET} fqdn` 
 echo ${FQDN}
 while [ "${FQDN}" == "" ]; do
