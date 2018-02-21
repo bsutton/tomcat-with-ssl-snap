@@ -38,7 +38,8 @@ You would normally use this snap from within your own snap
 
 # installing
 To install your snap
-sudo snap install <your snap>
+    
+    sudo snap install <your snap>
   
 Tomcat will start on port 8080. 
 
@@ -46,6 +47,7 @@ Tomcat will start on port 8080.
 
 You now need to obtain a certificate:
 Run:
+
     <yoursnap>.getcert <your email address> <fqdn> true
   
 True is the default for the final parameter so can be left off.
@@ -59,13 +61,14 @@ as Lets Encrypt has a daily request limit on live certificates (of around five).
 
 To use a staging certificate add 'false' to the end of the line:
 
-<yoursnap>.getcert <your email address> <fqdn> false
+    <yoursnap>.getcert <your email address> <fqdn> false
   
 # Certbot
 getcert uses Lets Encrypts cert bot to obtain the certificates:
 
 Certbot logs to: 
-/root/snap/<yoursnap>/current/letsencrypt/logs/letsencrypt.log
+
+    /root/snap/<yoursnap>/current/letsencrypt/logs/letsencrypt.log
   
 # certificate renewal
 The snap installs its own 'cron' process which runs every fifteen minutes to check for an expired certificate.
@@ -76,17 +79,19 @@ When it renews the certificate it will restart tomcat so it picks up the new cer
 Currently this process can trigger at ANY time during the day!
 
 The cron process logs to:
-/root/snap/<yoursnap>/current/cron/renew.log
+
+    /root/snap/<yoursnap>/current/cron/renew.log
   
 # Tomcat
 
-You can start/stop/restart tomcat vi
+You can start/stop/restart tomcat via:
 
-sudo snap start|stop|restart <yoursnap>.tomcat
+    sudo snap start|stop|restart <yoursnap>.tomcat
   
 ## Tomcat Logs
 
 Tomcat logs are contained within the snap and can be found at:
-/var/snap/<yoursnap>/current/logs
+
+    /var/snap/<yoursnap>/current/logs
 
 
