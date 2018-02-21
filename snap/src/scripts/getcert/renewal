@@ -1,15 +1,15 @@
 #!/bin/dash
-
+# this is the deploy hook that cerbot calls after successfully renewing a certificate
 set -x
 
 SNAPCTL=snapctl
 
 #temp hacks
-SNAP_NAME=tomcat-with-sll
-SNAPCTL=snap
+#SNAP_NAME=tomcat-with-sll
+#SNAPCTL=snap
 #end hacks	
 
-# after a cert renewal we need to install the certs into the java keystore
+# after a cert renewal we need to export the keys so tomcat can access them.
 
 KEYSTORE_PWD="`${SNAPCTL}` get keystorepwd"
 FQDN="`${SNAPCTL}` get fqdn"
@@ -21,14 +21,5 @@ openssl pkcs12 -export \
   -out ${SNAP_USER_DATA}/keystore/${FQDN}.p12 \
  -password pass:${KEYSTORE_PWD}
 
-# import pkcs12 store int java keystore.
-keytool -importkeystore \
- -noprompt \
- -srckeystore ${SNAP_USER_DATA}/tomcat8/keystore/${FQDN}.p12 \
- -srcstoretype pkcs12 \
- -srcstorepass ${KEYSTORE_PWD} \
- -destkeystore ${SNAP_USER_DATA}/tomcat8/keystore/${FQDN}.keystore \
- -deststoretype jks \
- -deststorepass ${FQDN}
 
 ${SNAPCTL} restart

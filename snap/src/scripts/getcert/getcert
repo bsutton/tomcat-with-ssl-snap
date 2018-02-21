@@ -7,6 +7,10 @@ echo snap=${SNAP}
 SNAP_NAME=tomcat-with-ssl
 #end hacks	
 
+snap set ${SNAP_NAME} keystorepwd=
+snap set ${SNAP_NAME} fqdn=
+snap set ${SNAP_NAME} email=
+
 # If no arguments, print usage statement & exit from function
 if [ "$#" -ne "2" ]; then
 	echo
@@ -27,6 +31,7 @@ FQDN=$2
 # generate random password for keystore
 KEYSTORE_PWD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 KEYSTORE_DIR=${SNAP_USER_DATA}/keystore
+
 
 #mkdir -p ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN}
 
@@ -120,8 +125,9 @@ sed  -e 's,%FQDN%,'${FQDN}',g' \
 	> "${SERVERXML}"
 
 # The certbot renewal process needs these.
-snapctl set KEYSTORE_PWD=${KEYSTORE_PWD}
-snapctl set FQDN=${FQDN}
+snap set ${SNAP_NAME} keystorepwd=${KEYSTORE_PWD}
+snap set ${SNAP_NAME} fqdn=${FQDN}
+snap set ${SNAP_NAME} email=${EMAIL}
 
 echo Starting Tomcat
 snap restart ${SNAP_NAME}.tomcat

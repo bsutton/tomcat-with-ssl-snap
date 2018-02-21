@@ -1,37 +1,51 @@
-#!/bin/dash
+#!/bin/bash
 set -x
 
 echo -n "Wait for lets encrypt certificate to be installed"
+#SNAP_NAME=tomcat-with-ssl
 
-SNAPCTL=snapctl
+if [ "${SNAP_USER_DATA}" == "" ]; then
+	SNAP_USER_DATA=/var/log/tomcat-with-ssl
+fi
 
-while [ "`${SNAPCTL}` get fqdn" == "" ]; do
+mkdir -p ${SNAP_USER_DATA}/cron
+LOG_FILE=${SNAP_USER_DATA}/cron/renew.log
+
+echo "tomcat-with-ssl cron running certificate renewal" &>> ${LOG_FILE}
+SNAPGET="snapctl get"
+#SNAPGET="snap get ${SNAP_NAME}" # hack
+
+FQDN=`${SNAPGET} fqdn` 
+echo ${FQDN}
+while [ "${FQDN}" == "" ]; do
 	sleep 15m
+	FQDN=`${SNAPGET} fqdn`
 done
+
+
+EMAIL=`${SNAPGET} email` 
+echo email=$EMAIL &>> ${LOG_FILE}
 
 echo "FQDN has been configured by getcert."
 echo "Running certificate renewal every 15min"
-
-FQDN="`${SNAPCTL}` get fqdn"
-
 while true; do
 
 	# run cert bot renewal
- 	certbot certonly \
+ 	echo certbot certonly \
 	 --standalone \
 	 --noninteractive \
 	 --domain ${FQDN} \
 	 --agree-tos \
 	 --email ${EMAIL} \
 	 --config-dir ${SNAP_USER_DATA}/letsencrypt/config \
-	 --work-dir ${SNAP_USER_DATA}/letsencrypt/work \	
+	 --work-dir ${SNAP_USER_DATA}/letsencrypt/work \
 	 --logs-dir ${SNAP_USER_DATA}/letsencrypt/logs \
 	 --cert-path ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN} \
 	 --key-path ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN} \
 	 --fullchain-path ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN} \
-	 --deploy-hook ${SNAP}/letsencrypt/renewal-hooks/deploy 
-	 #--test-cert \
-	 #--staging
+	 --deploy-hook ${SNAP}/letsencrypt/renewal-hooks/deploy \
+	 --test-cert \
+	 --staging &>>${LOG_FILE}
 	 #--dry-run \
 	sleep 15m
 done
