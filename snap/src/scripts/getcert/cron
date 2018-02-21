@@ -7,7 +7,7 @@ mkdir -p ${SNAP_USER_DATA}/cron
 LOG_FILE=${SNAP_USER_DATA}/cron/renew.log
 
 echo 
-echo "tomcat-with-ssl cron running certificate renewal" &>> ${LOG_FILE}
+echo "Monitoring for certificate expiry" &>> ${LOG_FILE}
 echo 
 
 
@@ -34,7 +34,7 @@ echo certificatetype=$CERTIFICATE_TYPE &>> ${LOG_FILE}
 echo fqdn=$FQDN &>> ${LOG_FILE}
 
 echo "FQDN has been configured by getcert."
-echo "Running certificate renewal every 15min"
+echo "Running certificate expiry check every 15min"
 while true; do
 
 	# run cert bot renewal
