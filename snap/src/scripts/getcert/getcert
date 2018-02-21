@@ -41,6 +41,7 @@ fi
 echo Stopping Tomcat
 snap stop ${SNAP_NAME}.tomcat
 
+echo fetching SSL certificate, this will take 30+seconds
 echo Please ignore the following warning: 'Non-standard path(s)....'
 # run cert bot to obtain certificates
 certbot certonly \
