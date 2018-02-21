@@ -8,10 +8,9 @@ FQDN=`${SNAPGET} fqdn`
 
 KEYSTORE_DIR=${SNAP_USER_DATA}/keystore
 KEYSTORE_PWD=`${SNAPGET} keystorepwd` 
-
-# re-create pkcs12 store
 KEYSTORE_PATH=${KEYSTORE_DIR}/${FQDN}.p12 
 
+# re-create pkcs12 store using the renewed certificate
 openssl pkcs12 -export \
   -in ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN}/fullchain.pem \
   -inkey ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN}/privkey.pem \
@@ -19,5 +18,5 @@ openssl pkcs12 -export \
  -password pass:${KEYSTORE_PWD}
 
 # restart tomcat so it picks up the new certificates.
-# TODO: make this controllable so we don't randomly restart tomcat
-snapctl restart tomcat-with-ssl.tomcat
+# TODO: make this controllable so we don't randomly restart tomcat!!!!
+snapctl restart ${SNAP_NAME}
