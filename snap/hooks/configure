@@ -1,0 +1,3 @@
+#!/bin/bash
+
+# does nothing. You can't call snap set ... without a configure hook

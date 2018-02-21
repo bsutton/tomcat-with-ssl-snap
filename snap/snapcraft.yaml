@@ -28,6 +28,10 @@ apps:
     command: getcert
     plugs: [network, network-bind]
 
+hooks:
+  configure:
+    plugs: [home]
+
 parts: 
   getcert:
     plugin: dump
@@ -45,6 +49,12 @@ parts:
     source-type: git
     prepare: |
       cp build.properties.default build.properties
+    prime:
+      - -webapps/docs
+      - -webapps/examples
+      - -webapps/manager
+      - -webapps/host-manager
+      - -webapps/ROOT
     install: |
       cp -r output/build/* $SNAPCRAFT_PART_INSTALL
       cat <<EOF > $SNAPCRAFT_PART_INSTALL/tomcat-launch
