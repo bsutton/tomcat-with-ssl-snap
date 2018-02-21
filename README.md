@@ -9,33 +9,84 @@ Note: current if a renewal occurs tomcat will be restarted without warning.
 
 You would normally use this snap from within your own snap 
 
-name: orion-monitor # you probably want to 'snapcraft register <name>'
-  version: '0.1' 
-  summary: monitoring of orion vms.
-  description: |
-    My web app does good things.
+    name: orion-monitor # you probably want to 'snapcraft register <name>'
+    version: '0.1' 
+    summary: monitoring of orion vms.
+    description: |
+      My web app does good things.
       
-  grade: devel # must be 'stable' to release into candidate/stable channels
-  confinement: devmode # use 'strict' once you have the right plugs and slots
+    grade: devel # must be 'stable' to release into candidate/stable channels
+    confinement: devmode # use 'strict' once you have the right plugs and slots
   
-  apps:
-    tomcat:
-      command: tomcat-launch
-      daemon: simple
-      plugs: [network, network-bind]
+    apps:
+      tomcat:
+        command: tomcat-launch
+        daemon: simple
+        plugs: [network, network-bind]
   
-  parts:
-    my-webapp:
-      plugin: maven
-      source: https://github.com/bsutton/IrrigationForPi.git
-      maven-options:
-        [-DskipTests=true]
-      organize:
-        # rename the generated war so the servlet context name is short
-        war/irrigation-1.0-SNAPSHOT.war : webapps/irrigation.war
-      after: [tomcat-with-ssl]
+    parts:
+      my-webapp:
+        plugin: maven
+        source: https://github.com/bsutton/IrrigationForPi.git
+        maven-options:
+          [-DskipTests=true]
+        organize:
+          # rename the generated war so the servlet context name is short
+          war/irrigation-1.0-SNAPSHOT.war : webapps/irrigation.war
+        after: [tomcat-with-ssl]
 
 
+# installing
+To install your snap
+sudo snap install <your snap>
+  
+Tomcat will start on port 8080. 
+
+# obtain a certificate
+
+You now need to obtain a certificate:
+Run:
+    <yoursnap>.getcert <your email address> <fqdn> true
+  
+True is the default for the final parameter so can be left off.
+
+# use a staging certificate during testing
+Running getcert obtains a Lets Encrypt certificate.
+By default it will get a live production certificate.
+
+During testing of your app installation process you may want to run with a Lets Encrypt 'Staging' certificate
+as Lets Encrypt has a daily request limit on live certificates (of around five).
+
+To use a staging certificate add 'false' to the end of the line:
+
+<yoursnap>.getcert <your email address> <fqdn> false
+  
+# Certbot
+getcert uses Lets Encrypts cert bot to obtain the certificates:
+
+Certbot logs to: 
+/root/snap/<yoursnap>/current/letsencrypt/logs/letsencrypt.log
+  
+# certificate renewal
+The snap installs its own 'cron' process which runs every fifteen minutes to check for an expired certificate.
+
+If the renewal cron detects an expiry certificate it will automatically renew it.
+When it renews the certificate it will restart tomcat so it picks up the new certificate.
+
+Currently this process can trigger at ANY time during the day!
+
+The cron process logs to:
+/root/snap/<yoursnap>/current/cron/renew.log
+  
+# Tomcat
+
+You can start/stop/restart tomcat vi
+
+sudo snap start|stop|restart <yoursnap>.tomcat
+  
+## Tomcat Logs
+
+Tomcat logs are contained within the snap and can be found at:
+/var/snap/<yoursnap>/current/logs
 
 
- 
