@@ -25,14 +25,15 @@ done
 
 EMAIL=`${SNAPGET} email` 
 echo email=$EMAIL &>> ${LOG_FILE}
+echo fqdn=$FQDN &>> ${LOG_FILE}
 
 echo "FQDN has been configured by getcert."
 echo "Running certificate renewal every 15min"
 while true; do
 
 	# run cert bot renewal
- 	echo certbot certonly \
-	 --standalone \
+ 	certbot certonly \
+	 --webroot -w ${SNAP_DATA}/webapps \
 	 --noninteractive \
 	 --domain ${FQDN} \
 	 --agree-tos \
@@ -45,6 +46,7 @@ while true; do
 	 --fullchain-path ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN} \
 	 --deploy-hook ${SNAP}/letsencrypt/renewal-hooks/deploy \
 	 --test-cert \
+ 	 --force-renewal \
 	 --staging &>>${LOG_FILE}
 	 #--dry-run \
 	sleep 15m
