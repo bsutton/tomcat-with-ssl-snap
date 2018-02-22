@@ -10,24 +10,6 @@ description: |
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: devmode # use 'strict' once you have the right plugs and slots
   
-
-apps:
-  tomcat:
-    command: tomcat-launch
-    daemon: simple
-    plugs: [network, network-bind]
-
-  # used to ran the certbot renewal process.
-  cron:
-    command: cron
-    daemon: simple
-    plugs: [network, network-bind]
-
-  # You must run getcert after the install to create the certificate.
-  getcert:
-    command: getcert
-    plugs: [network, network-bind]
-
 hooks:
   configure:
     plugs: [home]
