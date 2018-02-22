@@ -22,6 +22,12 @@ parts:
     # this installs the certs into the java keystore and restarts tomcat.
     organize: 
       renewal : letsencrypt/renewal-hooks/deploy
+    prepare: |
+      sudo apt-get update
+      sudo apt-get install software-properties-common
+      sudo add-apt-repository --yes ppa:certbot/certbot
+      sudo apt-get update
+      sudo apt-get install --yes certbot
     stage-packages:
       - certbot
 
@@ -31,6 +37,8 @@ parts:
     source-type: git
     prepare: |
       cp build.properties.default build.properties
+    organize:
+      snap/src/scripts/tomcat-launch : tomcat-launch
     prime:
       - -webapps/docs
       - -webapps/examples
