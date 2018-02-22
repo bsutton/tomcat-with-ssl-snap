@@ -23,11 +23,11 @@ parts:
     organize: 
       renewal : letsencrypt/renewal-hooks/deploy
     prepare: |
-      sudo apt-get update
-      sudo apt-get install software-properties-common
-      sudo add-apt-repository --yes ppa:certbot/certbot
-      sudo apt-get update
-      sudo apt-get install --yes certbot
+      apt-get update
+      apt-get install software-properties-common
+      add-apt-repository --yes ppa:certbot/certbot
+      apt-get update
+      apt-get install --yes certbot
     stage-packages:
       - certbot
 
