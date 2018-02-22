@@ -1,0 +1,11 @@
+#!/bin/bash
+
+export JRE_HOME=\${SNAP}/usr/lib/jvm/default-java/jre
+export JAVA_HOME=\${SNAP}/usr/lib/jvm/default-java/jre
+export CATALINA_HOME=\${SNAP}
+export CATALINA_BASE=\${SNAP_DATA}
+export CATALINA_TMPDIR=/tmp
+cp -rn \${CATALINA_HOME}/conf \${CATALINA_BASE}/
+cp -rn \${CATALINA_HOME}/webapps \${CATALINA_BASE}/
+exec \${CATALINA_HOME}/bin/catalina.sh run
+
