@@ -22,12 +22,7 @@ parts:
     # this installs the certs into the java keystore and restarts tomcat.
     organize: 
       renewal : letsencrypt/renewal-hooks/deploy
-    prepare: |
-      apt-get update
-      apt-get install software-properties-common
-      add-apt-repository --yes ppa:certbot/certbot
-      apt-get update
-      apt-get install --yes certbot
+    after: [setup-repo]
     stage-packages:
       - certbot
 
@@ -77,4 +72,14 @@ parts:
       - libblkid1
       - zlib1g
       - libpcre3
+
+
+# certbot not available in standard repos so we need to add a repository
+setup-repo:
+    prepare: |
+      apt-get update
+      apt-get install software-properties-common
+      add-apt-repository --yes ppa:certbot/certbot
+      apt-get update
+      apt-get install --yes certbot
 
