@@ -20,10 +20,10 @@ parts:
   setup-repo:
     plugin: nil
     prepare: |
-      apt-get update
-      apt-get install software-properties-common
+      apt-get update --yes
+      apt-get install --yes software-properties-common
       add-apt-repository --yes ppa:certbot/certbot
-      apt-get update
+      apt-get update --yes
       apt-get install --yes certbot
  
   getcert:
