@@ -7,9 +7,6 @@ description: |
   managed by certbot (Lets Encrypt) including automatica renewals.
   Note: current if a renewal occurs tomcat will be restarted without warning.
   
-grade: devel # must be 'stable' to release into candidate/stable channels
-confinement: devmode # use 'strict' once you have the right plugs and slots
-  
 hooks:
   configure:
     plugs: [home]
@@ -39,7 +36,7 @@ parts:
       - libc6
       - libdb5.3
 
-  tomcat:
+  tomcat-with-ssl:
     plugin: ant
     source: https://github.com/apache/tomcat85.git
     source-type: git
