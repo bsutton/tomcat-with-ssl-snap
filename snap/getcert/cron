@@ -50,7 +50,7 @@ while true; do
 	 --cert-path ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN} \
 	 --key-path ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN} \
 	 --fullchain-path ${SNAP_USER_DATA}/letsencrypt/config/live/${FQDN} \
-	 --deploy-hook ${SNAP}/letsencrypt/renewal-hooks/deploy  &>>${LOG_FILE}
+	 --deploy-hook ${SNAP}/getcert/post-renewal  &>>${LOG_FILE}
 
 	sleep 15m
 done

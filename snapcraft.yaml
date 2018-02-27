@@ -28,14 +28,16 @@ parts:
  
   getcert:
     plugin: dump
-    source: snap/src/scripts/getcert
-    # run our renew script as a certbot post renewal deploy script
-    # this installs the certs into the java keystore and restarts tomcat.
-    organize: 
-      renewal : letsencrypt/renewal-hooks/deploy
+    source: snap/getcert
+    ## run our renew script as a certbot post renewal deploy script
+    ## this installs the certs into the java keystore and restarts tomcat.
+    #organize: 
+      #renewal : letsencrypt/renewal-hooks/deploy
     after: [setup-repo]
     stage-packages:
       - certbot
+      - libc6
+      - libdb5.3
 
   tomcat:
     plugin: ant
@@ -43,8 +45,8 @@ parts:
     source-type: git
     prepare: |
       cp build.properties.default build.properties
-    organize:
-      snap/src/scripts/tomcat-launch : tomcat-launch
+    #organize:
+      #snap/src/scripts/tomcat-launch : tomcat-launch
     prime:
       - -webapps/docs
       - -webapps/examples
@@ -83,6 +85,7 @@ parts:
       - libblkid1
       - zlib1g
       - libpcre3
+      - libsystemd0
 
 
 
