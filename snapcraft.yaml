@@ -21,7 +21,7 @@ parts:
       cp build.properties.default build.properties
     #organize:
       #snap/src/scripts/tomcat-launch : tomcat-launch
-    after: [getcert,setup-repo]
+    after: [setup-repo,getcert]
     prime:
       - -webapps/docs
       - -webapps/examples
