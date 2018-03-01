@@ -36,8 +36,8 @@ parts:
       export CATALINA_BASE=\${SNAP_DATA}
       export CATALINA_TMPDIR=/tmp
       cp -rn \${CATALINA_HOME}/conf \${CATALINA_BASE}/
-	  # this creates a second copy of the webapps directory. No problem but need to see if we can clean up.
-	  # seems like an organize statement might do the trick.
+      # this creates a second copy of the webapps directory. No problem but need to see if we can clean up.
+      # seems like an organize statement might do the trick.
       cp -rn \${CATALINA_HOME}/webapps \${CATALINA_BASE}/
       exec \${CATALINA_HOME}/bin/catalina.sh run
       EOF
