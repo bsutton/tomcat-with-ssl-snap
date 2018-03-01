@@ -1,17 +1,18 @@
+---
 name: tomcat-with-ssl
-version: '0.1' # just for humans, typically '1.2+git' or '1.3.2'
+version: '0.1'  # just for humans, typically '1.2+git' or '1.3.2'
 summary: Apache Tomcat with SSL activated and managed by Certbot.
-description: | 
+description: |
   Intended to use as a part to install Apache Tomcat with
-  SSL enabled and the required certificate automatically 
+  SSL enabled and the required certificate automatically
   managed by certbot (Lets Encrypt) including automatica renewals.
   Note: current if a renewal occurs tomcat will be restarted without warning.
-  
+
 hooks:
   configure:
     plugs: [home]
 
-parts: 
+parts:
 
   tomcat-with-ssl:
     plugin: ant
@@ -19,7 +20,7 @@ parts:
     source-type: git
     prepare: |
       cp build.properties.default build.properties
-    after: [setup-repo,getcert]
+    after: [setup-repo, getcert]
     prime:
       - -webapps/docs
       - -webapps/examples
@@ -36,7 +37,8 @@ parts:
       export CATALINA_BASE=\${SNAP_DATA}
       export CATALINA_TMPDIR=/tmp
       cp -rn \${CATALINA_HOME}/conf \${CATALINA_BASE}/
-      # this creates a second copy of the webapps directory. No problem but need to see if we can clean up.
+      # this creates a second copy of the webapps directory.
+      # No problem but need to see if we can clean up.
       # seems like an organize statement might do the trick.
       cp -rn \${CATALINA_HOME}/webapps \${CATALINA_BASE}/
       exec \${CATALINA_HOME}/bin/catalina.sh run
@@ -61,6 +63,3 @@ parts:
       - zlib1g
       - libpcre3
       - libsystemd0
-
-
-
