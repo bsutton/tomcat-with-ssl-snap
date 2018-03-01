@@ -19,8 +19,6 @@ parts:
     source-type: git
     prepare: |
       cp build.properties.default build.properties
-    #organize:
-      #snap/src/scripts/tomcat-launch : tomcat-launch
     after: [setup-repo,getcert]
     prime:
       - -webapps/docs

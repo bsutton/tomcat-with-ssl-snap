@@ -1,6 +1,12 @@
 #!/bin/bash
 #set -x
 
+
+if [[ $EUID -ne 0 ]]; then
+    echo "This script should MUST be run using sudo or as the root user"
+    exit 1
+fi
+
 # If no arguments, print usage statement & exit from function
 if [ "$#" -lt "2" ] || [ "$#" -gt "3" ] ; then
 	echo
