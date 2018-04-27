@@ -18,8 +18,6 @@ parts:
     plugin: ant
     source: https://github.com/apache/tomcat85.git
     source-type: git
-    prepare: |
-      cp build.properties.default build.properties
     after: [setup-repo, getcert]
     prime:
       - -webapps/docs
@@ -27,7 +25,11 @@ parts:
       - -webapps/manager
       - -webapps/host-manager
       - -webapps/ROOT
-    install: |
+    override-build: |
+      echo "Pre build steps"
+      cp build.properties.default build.properties
+      snapcraftctl build
+      echo "Post build steps"
       cp -r output/build/* $SNAPCRAFT_PART_INSTALL
       cat <<EOF > $SNAPCRAFT_PART_INSTALL/tomcat-launch
       #!/bin/sh
