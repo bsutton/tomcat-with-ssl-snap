@@ -17,7 +17,7 @@ parts:
   tomcat-with-ssl:
     plugin: ant
     source: https://svn.apache.org/repos/asf/tomcat/tc8.5.x/trunk/
-    source-type: git
+    source-type: svn
     after: [setup-repo, getcert]
     prime:
       - -webapps/docs
