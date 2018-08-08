@@ -26,11 +26,11 @@ parts:
       - -webapps/host-manager
       - -webapps/ROOT
     override-build: |
-      echo "install java 10 from ppa"
-      add-apt-repository ppa:linuxuprising/java
-      apt-get update --yes
-      apt-get install oracle-java10-installer
-      apt-get install oracle-java10-set-default
+      # echo "install java 10 from ppa"
+      # add-apt-repository ppa:linuxuprising/java
+      # apt-get update --yes
+      # apt-get install --yes oracle-java10-installer
+      # apt-get install --yes oracle-java10-set-default
       echo "Pre build steps"
       cp build.properties.default build.properties
       snapcraftctl build
