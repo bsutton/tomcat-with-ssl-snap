@@ -16,7 +16,8 @@ parts:
 
   tomcat-with-ssl:
     plugin: ant
-    source: https://svn.apache.org/repos/asf/tomcat/tc8.5.x/trunk/
+    # after 8.5.32 you need java 9!
+    source: https://svn.apache.org/repos/asf/tomcat/tc8.5.x/tags/TOMCAT_8_5_32/
     source-type: svn
     after: [setup-repo, getcert]
     prime:
